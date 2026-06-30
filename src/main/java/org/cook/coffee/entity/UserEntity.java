@@ -17,7 +17,9 @@ public class UserEntity {
     @Id @GeneratedValue(strategy = GenerationType.UUID)
     private UUID uuid;
 
+    @Column(unique = true)
     private String email;
+
     private String passwordHash;
 
     @ManyToOne
