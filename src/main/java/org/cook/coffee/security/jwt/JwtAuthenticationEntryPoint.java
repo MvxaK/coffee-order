@@ -18,7 +18,7 @@ import java.util.Map;
 @Component
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-    private final static String JWT_COOKIE_NAME = "accessToken";
+    public final static String JWT_COOKIE_NAME = "accessToken";
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {

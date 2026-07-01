@@ -7,6 +7,7 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.cook.coffee.model.Role;
 import org.cook.coffee.security.config.CustomUserDetails;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -20,8 +21,10 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
+    @Value("${jwt.secret}")
     private String secretKey;
 
+    @Value("${jwt.expiration}")
     private long jwtExpiration;
 
     public String extractEmail(String token){
