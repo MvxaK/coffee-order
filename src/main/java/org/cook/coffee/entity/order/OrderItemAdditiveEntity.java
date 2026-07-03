@@ -26,6 +26,8 @@ public class OrderItemAdditiveEntity {
     @JoinColumn(name = "additive_id")
     private AdditiveEntity additive;
 
+    private String additiveName;
+
     private BigDecimal price;
 
     private Integer quantity;

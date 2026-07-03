@@ -14,6 +14,7 @@ public class OrderItemAdditive {
     private Long id;
     private Long orderItemId;
     private Long additiveId;
+    private String additiveName;
     private BigDecimal price;
     private Integer quantity;
 

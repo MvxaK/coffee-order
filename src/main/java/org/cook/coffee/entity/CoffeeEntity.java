@@ -24,4 +24,7 @@ public class CoffeeEntity {
     private Integer reservedStock;
     private String url;
 
+    @Version
+    private Long version;
+
 }
