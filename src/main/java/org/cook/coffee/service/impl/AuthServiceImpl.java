@@ -46,6 +46,8 @@ public class AuthServiceImpl implements AuthService {
         RoleEntity roleEntity = roleRepository.findByRole(Role.ROLE_USER);
         userEntity.setRole(roleEntity);
 
+        UserEntity savedUser = userRepository.save(userEntity);
+
         Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
@@ -54,9 +56,9 @@ public class AuthServiceImpl implements AuthService {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
         String jwt = jwtService.generateToken(userDetails);
-        String role = userEntity.getRole().getRole().name();
+        String role = savedUser.getRole().getRole().name();
 
-        return new AuthResponse(jwt, "Bearer", userEntity.getEmail(), userEntity.getId(), role);
+        return new AuthResponse(jwt, "Bearer", savedUser.getEmail(), savedUser.getId(), role);
     }
 
     @Override

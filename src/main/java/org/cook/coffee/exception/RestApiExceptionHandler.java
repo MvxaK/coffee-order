@@ -10,7 +10,7 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
 
-@RestControllerAdvice
+@RestControllerAdvice(basePackages = "org.cook.coffee.controller.api")
 public class RestApiExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)

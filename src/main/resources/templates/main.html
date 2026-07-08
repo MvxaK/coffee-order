@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout}">
+<head>
+    <th:block layout:fragment="page-specific-head">
+        <title>Main</title>
+        <link rel="stylesheet" href="/css/styles.css">
+    </th:block>
+</head>
+
+<body layout:fragment="content">
+
+<header class="position-relative text-white" style="height: 100vh;">
+    <div class="hero d-flex flex-column justify-content-center align-items-center text-center h-100 px-3"
+         style="background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+                 url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_8hxN-AikNeqkOXzcXXmTCplaiDse3Iy8A8NB5OSehGXQ3H4ergQ1_aM&s=10') center/cover;">
+        <h1 class="display-4 fw-bold text-light mb-3">Bitter sweat and tasty</h1>
+        <p class="lead mb-4 text-light">The "bean" we roast and brew is the seed of a red or yellow coffee cherry</p>
+        <div>
+            <a href="/menu" class="btn btn-outline-warning text-white fw-semibold px-4 py-2 rounded-pill shadow me-2">
+                Go to Menu
+            </a>
+        </div>
+    </div>
+</header>
+
+<section id="about" class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center fw-bold mb-5">About Coffee</h2>
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <h3 class="fw-semibold mb-3">Bitter sweat and tasty</h3>
+                <p class="mb-3">Coffee is a widely consumed, invigorating beverage brewed from the roasted and ground seeds of the Coffea plant</p>
+                <p>Known for its dark color, bitter taste, and stimulating effects, it is rich in caffeine and ranks as one of the most popular drinks and heavily traded global commodities worldwide</p>
+            </div>
+            <div class="col-lg-6">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT9dHL_bgXK_VTXNoyJZvd8y2wfUXfH8QdxtavR14nZTD92oJ5FkLvSOdU&s=10"
+                     alt="Coffee picture" class="img-fluid rounded shadow">
+            </div>
+        </div>
+    </div>
+</section>
+
+</body>
+</html>

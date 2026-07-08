@@ -8,7 +8,7 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring", uses = {OrderItemMapper.class})
 public interface OrderMapper {
 
-    @Mapping(target = "userId", expression = "java(EntityIdUtils.extractId(entity.getUser()))")
+    @Mapping(target = "userId", source = "user.id")
     @Mapping(target = "items", source = "orderItems")
     Order toModel(OrderEntity entity);
 

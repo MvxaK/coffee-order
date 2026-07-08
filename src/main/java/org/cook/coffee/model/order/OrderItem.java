@@ -13,6 +13,7 @@ import java.util.List;
 public class OrderItem {
 
     private Long id;
+    private Long orderId;
     private Long coffeeId;
     private Long sizeId;
     private String coffeeName;

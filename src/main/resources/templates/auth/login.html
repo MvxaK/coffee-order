@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <th:block layout:fragment="page-specific-head">
+        <link rel="stylesheet" href="/css/forms.css">
+    </th:block>
+</head>
+<body layout:fragment="content">
+
+<div class="container mt-5">
+    <div class="card shadow p-4 rounded">
+
+        <h2 class="text-center mb-4 fw-bold text-dark">User Login</h2>
+
+        <div id="message" class="alert d-none" role="alert"></div>
+
+        <form id="loginForm">
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="text" id="email" name="email" class="form-control" placeholder="Enter email" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="Enter password" required>
+            </div>
+
+            <button type="submit" class="btn btn-warning w-100 fw-semibold mt-3">Login</button>
+        </form>
+
+        <p class="text-center mt-3">
+            <span>Don't have an account?</span>
+            <a href="/auth/register">Register here</a>
+        </p>
+
+    </div>
+</div>
+
+<th:block layout:fragment="page-specific-scripts-bottom">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('loginForm');
+            const messageDiv = document.getElementById('message');
+
+            if (!loginForm || !messageDiv) return;
+
+            loginForm.addEventListener('submit', async function(event) {
+                event.preventDefault();
+
+                const formData = new FormData(this);
+                const loginData = {
+                    email: formData.get('email'),
+                    password: formData.get('password')
+                };
+
+                messageDiv.innerHTML = '';
+                messageDiv.className = 'alert d-none';
+
+                try {
+                    const response = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: "include",
+                        body: JSON.stringify(loginData)
+                    });
+
+                    if (response.ok) {
+                        const authResponse = await response.json();
+
+                        if (typeof setToken === 'function') {
+                            setToken(authResponse.token);
+                            setUser({
+                                email: authResponse.email,
+                                userId: authResponse.userId,
+                                role: authResponse.role
+                            });
+
+                            messageDiv.innerHTML = 'Login successful! Redirecting...';
+                            messageDiv.className = 'alert alert-success';
+                            messageDiv.classList.remove('d-none');
+
+                            setTimeout(() => {
+                                window.location.href = '/';
+                            }, 1500);
+                        } else {
+                            localStorage.setItem('token', authResponse.token);
+                            window.location.reload();
+                        }
+                    } else {
+                        let errorMessage = 'Login failed';
+                        try {
+                            const errorText = await response.text();
+                            if (errorText) {
+                                errorMessage = errorText;
+                            }
+                        } catch (e) {
+
+                        }
+                        messageDiv.innerHTML = errorMessage;
+                        messageDiv.className = 'alert alert-danger';
+                    }
+                } catch (error) {
+                    messageDiv.innerHTML = 'Error: ' + error.message;
+                    messageDiv.className = 'alert alert-danger';
+                    messageDiv.classList.remove('d-none');
+                    console.error('Login error:', error);
+                }
+            });
+
+            if (isAuthenticated()) {
+                window.location.href = '/';
+            }
+        });
+    </script>
+</th:block>
+</body>
+</html>

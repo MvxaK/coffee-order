@@ -11,12 +11,14 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring", uses = {CoffeeMapper.class, CoffeeSizeMapper.class})
 public interface OrderItemMapper {
 
-    @Mapping(target = "coffeeId", expression = "java(EntityIdUtils.extractId(entity.getCoffee()))")
-    @Mapping(target = "sizeId", expression = "java(EntityIdUtils.extractId(entity.getCoffeeSize()))")
-    @Mapping(target = "additiveIds", expression = "java(EntityIdUtils.extractIds(entity.getAdditives().stream().map(org.cook.coffee.entity.order.OrderItemAdditiveEntity::getAdditive).toList()))")
+    @Mapping(target = "coffeeId", expression = "java(org.cook.coffee.mapper.EntityIdUtils.extractId(entity.getCoffee()))")
+    @Mapping(target = "sizeId", expression = "java(org.cook.coffee.mapper.EntityIdUtils.extractId(entity.getCoffeeSize()))")
+    @Mapping(target = "orderId", expression = "java(org.cook.coffee.mapper.EntityIdUtils.extractId(entity.getOrder()))")
+    @Mapping(target = "additiveIds", expression = "java(org.cook.coffee.mapper.EntityIdUtils.extractIds(entity.getAdditives().stream().map(org.cook.coffee.entity.order.OrderItemAdditiveEntity::getAdditive).toList()))")
     OrderItem toModel(OrderItemEntity entity);
 
     @Mapping(target = "coffee", ignore = true)
+    @Mapping(target = "order", ignore = true)
     @Mapping(target = "coffeeSize", ignore = true)
     @Mapping(target = "sizeName", ignore = true)
     @Mapping(target = "additives", ignore = true)
