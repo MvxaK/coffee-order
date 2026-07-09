@@ -1,11 +1,11 @@
 package org.cook.coffee.controller.api;
 
 import lombok.RequiredArgsConstructor;
-import org.cook.coffee.model.Coffee;
 import org.cook.coffee.model.CoffeeSize;
 import org.cook.coffee.service.interfaces.CoffeeSizeService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,6 +28,7 @@ public class CoffeeSizeApiController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<CoffeeSize> create(@RequestBody CoffeeSize coffeeSize) {
         CoffeeSize created = coffeeSizeService.create(coffeeSize);
 
@@ -36,11 +37,13 @@ public class CoffeeSizeApiController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<CoffeeSize> update(@PathVariable Long id, @RequestBody CoffeeSize coffeeSize) {
         return ResponseEntity.ok(coffeeSizeService.update(id, coffeeSize));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         coffeeSizeService.delete(id);
 

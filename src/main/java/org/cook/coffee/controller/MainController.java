@@ -16,9 +16,4 @@ public class MainController {
         return "menu";
     }
 
-    @GetMapping("/order")
-    public String order(){
-        return "order";
-    }
-
 }

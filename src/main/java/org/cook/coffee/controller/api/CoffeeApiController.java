@@ -5,6 +5,7 @@ import org.cook.coffee.model.Coffee;
 import org.cook.coffee.service.interfaces.CoffeeService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,6 +28,7 @@ public class CoffeeApiController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Coffee> create(@RequestBody Coffee coffee) {
         Coffee created = coffeeService.create(coffee);
 
@@ -35,11 +37,13 @@ public class CoffeeApiController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Coffee> update(@PathVariable Long id, @RequestBody Coffee coffee) {
         return ResponseEntity.ok(coffeeService.update(id, coffee));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         coffeeService.delete(id);
 

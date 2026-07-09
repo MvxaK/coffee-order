@@ -21,6 +21,12 @@
     <div id="coffeeContainer" class="row g-4">
 
     </div>
+
+    <div class="text-center mt-5">
+        <button id="submitFinalOrder" class="btn btn-warning">
+            Order
+        </button>
+    </div>
 </div>
 
 <div class="modal fade" id="coffeeModal" tabindex="-1" aria-hidden="true">
@@ -78,6 +84,27 @@
                 <button id="addToOrder" class="btn btn-warning">
                     Add to order
                 </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="orderPreviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Order confirmation</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted">Please, check your order:</p>
+                <div id="orderPreviewContent" class="border rounded p-3 bg-light" style="max-height: 300px; overflow-y: auto;">
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Change</button>
+                <button id="confirmFinalOrder" class="btn btn-success">Confirm</button>
             </div>
         </div>
     </div>

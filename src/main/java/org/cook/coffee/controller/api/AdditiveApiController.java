@@ -5,6 +5,7 @@ import org.cook.coffee.model.Additive;
 import org.cook.coffee.service.interfaces.AdditiveService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,6 +28,7 @@ public class AdditiveApiController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Additive> create(@RequestBody Additive additive) {
         Additive created = additiveService.create(additive);
 
@@ -35,11 +37,13 @@ public class AdditiveApiController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Additive> update(@PathVariable Long id, @RequestBody Additive additive) {
         return ResponseEntity.ok(additiveService.update(id, additive));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         additiveService.delete(id);
 

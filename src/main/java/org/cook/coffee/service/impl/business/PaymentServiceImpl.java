@@ -29,6 +29,14 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public void fail(OrderEntity order) {
+        if(order.getPaymentStatus().equals(PaymentStatus.PAID)){
+            throw new IllegalArgumentException("Order is already paid");
+        }
+
+        if(order.getPaymentStatus().equals(PaymentStatus.REFUNDED)){
+            throw new IllegalArgumentException("Order is refunded cannot pay for it");
+        }
+
         order.setPaymentStatus(PaymentStatus.FAILED);
     }
 
