@@ -19,7 +19,7 @@ public class CustomUserDetails implements UserDetails {
     private Collection<? extends GrantedAuthority> authorities;
 
     public CustomUserDetails(UserEntity userEntity) {
-        this.uuid = userEntity.getUuid();
+        this.uuid = userEntity.getId();
         this.email = userEntity.getEmail();
         this.passwordHash = userEntity.getPasswordHash();
         this.authorities = List.of(new SimpleGrantedAuthority(userEntity.getRole().getRole().name()));

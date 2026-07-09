@@ -34,7 +34,6 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public AuthResponse register(RegisterRequest request) {
-
         if(userRepository.findByEmail(request.getEmail()).isPresent()){
             throw new IllegalArgumentException("Email already exists");
         }
@@ -46,6 +45,8 @@ public class AuthServiceImpl implements AuthService {
         RoleEntity roleEntity = roleRepository.findByRole(Role.ROLE_USER);
         userEntity.setRole(roleEntity);
 
+        UserEntity savedUser = userRepository.save(userEntity);
+
         Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
@@ -54,14 +55,21 @@ public class AuthServiceImpl implements AuthService {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
         String jwt = jwtService.generateToken(userDetails);
-        String role = userEntity.getRole().getRole().name();
+        String role = savedUser.getRole().getRole().name();
 
-        return new AuthResponse(jwt, "Bearer", userEntity.getEmail(), userEntity.getId(), role);
+        return new AuthResponse(jwt, "Bearer", savedUser.getEmail(), savedUser.getId(), role);
     }
 
     @Override
     @Transactional
     public AuthResponse login(LoginRequest request) {
+        UserEntity userEntity = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new EntityNotFoundException("There is no user with email -> " + request.getEmail()));
+
+        if(!passwordEncoder.matches(request.getPassword(), userEntity.getPasswordHash())){
+            throw new IllegalArgumentException("Invalid password");
+        }
+
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
@@ -70,9 +78,6 @@ public class AuthServiceImpl implements AuthService {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
         String jwt = jwtService.generateToken(userDetails);
-
-        UserEntity userEntity = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new EntityNotFoundException("There is no user with email -> " + request.getEmail()));
 
         String role = userEntity.getRole().getRole().name();
 

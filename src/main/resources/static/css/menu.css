@@ -1,0 +1,160 @@
+body {
+    background: #f5f5f5;
+}
+
+#coffeeContainer .card {
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+    transition: .3s;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,.08);
+    height: 100%;
+}
+
+#coffeeContainer .card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 24px rgba(0,0,0,.15);
+}
+
+.coffee-image {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+}
+
+.coffee-price {
+    color: #ffc107;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.card-title {
+    font-weight: 700;
+}
+
+.modal-content {
+    border: none;
+    border-radius: 16px;
+}
+
+.modal-header {
+    background: linear-gradient(135deg,#1a1a1a,#2d2d2d);
+    color: white;
+}
+
+.modal-title {
+    color: #ffc107;
+    font-weight: 700;
+}
+
+#modalCoffeeImage {
+    width: 100%;
+    max-height: 250px;
+    object-fit: cover;
+}
+
+#modalCoffeePrice {
+    color: #ffc107;
+    font-weight: 700;
+    margin-top: 15px;
+}
+
+.quantity-control {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.quantity-control button {
+    width: 42px;
+    height: 42px;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.quantity-control span {
+    min-width: 30px;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.additive-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.additive-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.additive-image {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.additive-name {
+    font-weight: 600;
+}
+
+.additive-price {
+    color: #777;
+    font-size: .9rem;
+}
+
+.additive-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.additive-controls button {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+}
+
+.additive-quantity {
+    min-width: 22px;
+    text-align: center;
+    font-weight: bold;
+}
+
+#totalPrice {
+    color: #ffc107;
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.btn-warning {
+    font-weight: 600;
+}
+
+@media (max-width:768px) {
+    .coffee-image {
+        height: 180px;
+    }
+
+    #modalCoffeeImage {
+        margin-bottom: 20px;
+    }
+
+    .additive-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .additive-controls {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}

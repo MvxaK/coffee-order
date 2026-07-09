@@ -21,6 +21,10 @@ public class OrderItemEntity {
     private Long id;
 
     @ManyToOne
+    @JoinColumn(name = "order_id")
+    private OrderEntity order;
+
+    @ManyToOne
     @JoinColumn(name = "coffee_id")
     private CoffeeEntity coffee;
 

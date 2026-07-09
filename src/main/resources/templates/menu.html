@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>Menu</title>
+    <th:block layout:fragment="page-specific-head">
+        <link rel="stylesheet" href="/css/menu.css">
+    </th:block>
+</head>
+
+<body layout:fragment="content">
+
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold">Coffee Menu</h1>
+        <p class="text-muted">
+            Choose your favorite coffee and customize it with additives.
+        </p>
+    </div>
+
+    <div id="coffeeContainer" class="row g-4">
+
+    </div>
+
+    <div class="text-center mt-5">
+        <button id="submitFinalOrder" class="btn btn-warning">
+            Order
+        </button>
+    </div>
+</div>
+
+<div class="modal fade" id="coffeeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="modalCoffeeName"></h4>
+
+                <button type="button" class="btn-close" data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-5 text-center">
+                        <img id="modalCoffeeImage" class="img-fluid rounded shadow mb-3" alt="Coffee">
+
+                        <h5 id="modalCoffeePrice"></h5>
+                        <p id="modalCoffeeDescription" class="text-muted">
+
+                        </p>
+                    </div>
+
+                    <div class="col-md-7">
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Coffee Size</label>
+                            <select id="coffeeSize" class="form-select"></select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Coffee Quantity</label>
+                            <div class="quantity-control">
+                                <button id="coffeeMinus" type="button" class="btn btn-outline-warning">-</button>
+                                <span id="coffeeQuantity">1</span>
+                                <button id="coffeePlus" type="button" class="btn btn-outline-warning">+</button>
+                            </div>
+                        </div>
+                        <hr>
+                        <h5 class="mb-3">
+                            Additives
+                        </h5>
+                        <div id="additivesContainer">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer justify-content-between">
+                <div>
+                    <strong>Total:</strong>
+                    <span id="totalPrice">0 ₸</span>
+                </div>
+
+                <button id="addToOrder" class="btn btn-warning">
+                    Add to order
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="orderPreviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Order confirmation</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted">Please, check your order:</p>
+                <div id="orderPreviewContent" class="border rounded p-3 bg-light" style="max-height: 300px; overflow-y: auto;">
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Change</button>
+                <button id="confirmFinalOrder" class="btn btn-success">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block layout:fragment="page-specific-scripts-bottom">
+    <script src="/js/menu.js"></script>
+</th:block>
+
+</body>
+</html>

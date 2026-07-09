@@ -14,4 +14,14 @@ public interface RoleMapper {
         return entity.getRole();
     }
 
+    default RoleEntity toEntity(Role role){
+        if(role == null)
+            return null;
+
+        RoleEntity roleEntity = new RoleEntity();
+        roleEntity.setRole(role);
+
+        return roleEntity;
+    }
+
 }

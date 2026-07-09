@@ -21,6 +21,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+import static org.cook.coffee.security.jwt.JwtAuthenticationEntryPoint.JWT_COOKIE_NAME;
+
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -28,7 +30,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
     private final AuthenticationEntryPoint authenticationEntryPoint;
-
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
@@ -43,7 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             Cookie[] cookies = request.getCookies();
             if(cookies != null){
                 for (Cookie cookie: cookies){
-                    if("jwtToken".equals(cookie.getName())){
+                    if(JWT_COOKIE_NAME.equals(cookie.getName())){
                         jwt = cookie.getValue();
                         break;
                     }

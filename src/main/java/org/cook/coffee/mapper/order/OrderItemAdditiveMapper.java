@@ -11,8 +11,8 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring", uses = {AdditiveMapper.class, OrderItemMapper.class})
 public interface OrderItemAdditiveMapper {
 
-    @Mapping(target = "orderItemId", expression = "java(EntityIdUtils.extractId(entity.getOrderItem()))")
-    @Mapping(target = "additiveId", expression = "java(EntityIdUtils.extractId(entity.getAdditive()))")
+    @Mapping(target = "orderItemId", expression = "java(org.cook.coffee.mapper.EntityIdUtils.extractId(entity.getOrderItem()))")
+    @Mapping(target = "additiveId", expression = "java(org.cook.coffee.mapper.EntityIdUtils.extractId(entity.getAdditive()))")
     OrderItemAdditive toModel(OrderItemAdditiveEntity entity);
 
     @Mapping(target = "orderItem", ignore = true)

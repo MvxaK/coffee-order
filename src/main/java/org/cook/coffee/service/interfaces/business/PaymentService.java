@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 @Service
 public interface PaymentService {
 
-    void pay(OrderEntity order);
+    void markPaid(OrderEntity order);
     void fail(OrderEntity order);
     void refund(OrderEntity order);
 

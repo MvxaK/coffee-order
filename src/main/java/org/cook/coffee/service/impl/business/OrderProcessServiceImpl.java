@@ -14,10 +14,7 @@ import org.cook.coffee.model.business.PriceCalculationResult;
 import org.cook.coffee.model.order.*;
 import org.cook.coffee.repository.UserRepository;
 import org.cook.coffee.repository.order.OrderRepository;
-import org.cook.coffee.service.interfaces.business.OrderProcessService;
-import org.cook.coffee.service.interfaces.business.PaymentService;
-import org.cook.coffee.service.interfaces.business.PriceCalculatorService;
-import org.cook.coffee.service.interfaces.business.StockService;
+import org.cook.coffee.service.interfaces.business.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +32,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
+    private final OrderStatusService orderStatusService;
 
     @Override
     @Transactional
@@ -52,11 +50,122 @@ public class OrderProcessServiceImpl implements OrderProcessService {
         order.setCreatedAt(LocalDateTime.now());
         order.setUpdatedAt(LocalDateTime.now());
 
+        List<OrderItemEntity> orderItems = buildOrderItems(order, result);
+
+        order.setOrderItems(orderItems);
+
+        return orderMapper.toModel(orderRepository.save(order));
+    }
+
+    @Override
+    @Transactional
+    public void reserveStock(Long orderId) {
+        OrderEntity order = getOrder(orderId);
+
+        for (OrderItemEntity orderItem: order.getOrderItems()){
+            stockService.reserveCoffee(orderItem.getCoffee(), orderItem.getQuantity());
+
+            for (OrderItemAdditiveEntity orderItemAdditive: orderItem.getAdditives()){
+                stockService.reserveAdditive(orderItemAdditive.getAdditive(), orderItemAdditive.getQuantity());
+            }
+        }
+    }
+
+    @Override
+    @Transactional
+    public void commitStock(Long orderId) {
+        OrderEntity order = getOrder(orderId);
+
+        for (OrderItemEntity orderItem: order.getOrderItems()){
+            stockService.commitCoffee(orderItem.getCoffee(), orderItem.getQuantity());
+
+            for (OrderItemAdditiveEntity orderItemAdditive: orderItem.getAdditives()){
+                stockService.commitAdditive(orderItemAdditive.getAdditive(), orderItemAdditive.getQuantity());
+            }
+        }
+    }
+
+    @Override
+    @Transactional
+    public void releaseStock(Long orderId) {
+        OrderEntity order = getOrder(orderId);
+
+        for (OrderItemEntity orderItem: order.getOrderItems()){
+            stockService.releaseCoffee(orderItem.getCoffee(), orderItem.getQuantity());
+
+            for (OrderItemAdditiveEntity orderItemAdditive: orderItem.getAdditives()){
+                stockService.releaseAdditive(orderItemAdditive.getAdditive(), orderItemAdditive.getQuantity());
+            }
+        }
+    }
+
+    @Override
+    @Transactional
+    public void confirmPayment(Long orderId) {
+        OrderEntity order = getOrder(orderId);
+
+        orderStatusService.markPaid(order);
+        paymentService.markPaid(order);
+
+        saveOrder(order);
+    }
+
+    @Override
+    @Transactional
+    public void startPreparation(Long orderId) {
+        OrderEntity order = getOrder(orderId);
+
+        orderStatusService.markPreparing(order);
+
+        saveOrder(order);
+    }
+
+    @Override
+    @Transactional
+    public void markReady(Long orderId) {
+        OrderEntity order = getOrder(orderId);
+
+        orderStatusService.markReady(order);
+
+        saveOrder(order);
+    }
+
+    @Override
+    @Transactional
+    public void completeOrder(Long orderId) {
+        OrderEntity order = getOrder(orderId);
+
+        orderStatusService.markCompleted(order);
+
+        saveOrder(order);
+    }
+
+    @Override
+    @Transactional
+    public void cancelOrder(Long orderId) {
+        OrderEntity order = getOrder(orderId);
+
+        orderStatusService.cancel(order);
+        paymentService.refund(order);
+
+        saveOrder(order);
+    }
+
+
+    private OrderEntity getOrder(Long orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new EntityNotFoundException("There is no order with id -> " + orderId));
+    }
+
+    private void saveOrder(OrderEntity order) {
+        order.setUpdatedAt(LocalDateTime.now());
+        orderRepository.save(order);
+    }
+
+    private List<OrderItemEntity> buildOrderItems(OrderEntity order, PriceCalculationResult result){
         List<OrderItemEntity> orderItems = new ArrayList<>();
 
-        for (OrderItemCalculationResult itemResult : result.getItems()) {
-            stockService.reserveCoffee(itemResult.getCoffee(), itemResult.getQuantity());
-
+        for (OrderItemCalculationResult itemResult: result.getItems()) {
             OrderItemEntity item = new OrderItemEntity();
             item.setCoffee(itemResult.getCoffee());
             item.setCoffeeSize(itemResult.getCoffeeSize());
@@ -67,9 +176,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
 
             List<OrderItemAdditiveEntity> additiveEntities = new ArrayList<>();
 
-            for (OrderItemAdditiveCalculationResult additiveResult : itemResult.getAdditives()) {
-                stockService.reserveAdditive(additiveResult.getAdditive(), additiveResult.getQuantity());
-
+            for (OrderItemAdditiveCalculationResult additiveResult: itemResult.getAdditives()) {
                 OrderItemAdditiveEntity orderItemAdditive = new OrderItemAdditiveEntity();
                 orderItemAdditive.setOrderItem(item);
                 orderItemAdditive.setAdditive(additiveResult.getAdditive());
@@ -81,51 +188,10 @@ public class OrderProcessServiceImpl implements OrderProcessService {
             }
 
             item.setAdditives(additiveEntities);
+            item.setOrder(order);
             orderItems.add(item);
         }
 
-        order.setOrderItems(orderItems);
-        orderRepository.save(order);
-
-        return orderMapper.toModel(order);
-    }
-
-    @Override
-    @Transactional
-    public void cancelOrder(Long orderId) {
-        OrderEntity order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new EntityNotFoundException("There is no order with id -> " + orderId));
-
-        paymentService.refund(order);
-
-        for (OrderItemEntity orderItem : order.getOrderItems()){
-            stockService.releaseCoffee(orderItem.getCoffee(), orderItem.getQuantity());
-
-            for (OrderItemAdditiveEntity orderItemAdditive: orderItem.getAdditives()){
-                stockService.releaseAdditive(orderItemAdditive.getAdditive(), orderItemAdditive.getQuantity());
-            }
-        }
-
-        order.setUpdatedAt(LocalDateTime.now());
-        orderRepository.save(order);
-    }
-
-    @Override
-    @Transactional
-    public void confirmPayment(Long orderId) {
-        OrderEntity order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new EntityNotFoundException("There is no order with id -> " + orderId));
-
-        paymentService.pay(order);
-
-        for (OrderItemEntity orderItem: order.getOrderItems()){
-            stockService.commitCoffee(orderItem.getCoffee(), orderItem.getQuantity());
-
-            for (OrderItemAdditiveEntity orderItemAdditive: orderItem.getAdditives()){
-                stockService.commitAdditive(orderItemAdditive.getAdditive(), orderItemAdditive.getQuantity());
-            }
-        }
-
-        orderRepository.save(order);
+        return orderItems;
     }
 }
