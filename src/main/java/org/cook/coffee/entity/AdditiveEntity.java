@@ -22,6 +22,7 @@ public class AdditiveEntity {
     private Integer stock;
     private Integer reservedStock;
     private String url;
+    private boolean deleted = false;
 
     @Version
     private Long version;

@@ -199,6 +199,28 @@ function calculateTotal() {
 }
 
 document.getElementById("addToOrder").onclick = () => {
+    let singleCupPrice = Number(selectedCoffee.price);
+    const selectedSize = coffeeSize.options[coffeeSize.selectedIndex];
+    if (selectedSize) {
+        singleCupPrice += Number(selectedSize.dataset.price);
+    }
+
+    const itemRequests = [];
+    additives.forEach(additive => {
+        const qty = selectedAdditives.get(additive.id) ?? 0;
+        if (qty > 0) {
+            itemRequests.push({
+                additiveId: Number(additive.id),
+                additiveName: additive.name,
+                quantity: qty,
+                price: Number(additive.price)
+            });
+            singleCupPrice += Number(additive.price) * qty;
+        }
+    });
+
+    const itemTotalPrice = singleCupPrice * selectedCoffeeQuantity;
+
     const orderItem = {
         id: Date.now() + Math.random().toString(36).substr(2, 9),
         coffeeId: Number(selectedCoffee.id),
@@ -206,19 +228,10 @@ document.getElementById("addToOrder").onclick = () => {
         sizeId: Number(coffeeSize.value),
         sizeName: coffeeSize.options[coffeeSize.selectedIndex].text,
         quantity: selectedCoffeeQuantity,
-        requests: []
+        singlePrice: singleCupPrice,
+        totalItemPrice: itemTotalPrice,
+        requests: itemRequests
     };
-
-    additives.forEach(additive => {
-        const qty = selectedAdditives.get(additive.id) ?? 0;
-        if (qty > 0) {
-            orderItem.requests.push({
-                additiveId: Number(additive.id),
-                additiveName: additive.name,
-                quantity: qty
-            });
-        }
-    });
 
     currentOrder.items.push(orderItem);
     modal.hide();
@@ -236,22 +249,29 @@ document.getElementById("submitFinalOrder").onclick = () => {
 
 function renderPreviewList() {
     orderPreviewContent.innerHTML = "";
+    let finalOrderTotal = 0;
 
     currentOrder.items.forEach((item, index) => {
+        finalOrderTotal += item.totalItemPrice;
+
         const additivesList = item.requests
             .map(req => `${req.additiveName} (x${req.quantity})`)
             .join(", ");
 
         const row = document.createElement("div");
-        row.className = `d-flex justify-content-between align-items-center py-2 ${index > 0 ? 'border-top' : ''}`;
+        row.className = `d-flex justify-content-between align-items-center py-3 ${index > 0 ? 'border-top' : ''}`;
 
         row.innerHTML = `
             <div>
-                <strong>${item.coffeeName}</strong> x ${item.quantity} count.
+                <strong>${item.coffeeName}</strong> <span class="text-muted">x ${item.quantity} count</span>
                 <div class="text-muted small">Size: ${item.sizeName}</div>
                 ${additivesList ? `<div class="text-success small">Additives: ${additivesList}</div>` : ''}
+                <div class="fw-semibold small mt-1 text-secondary">
+                    Price: ${item.singlePrice.toFixed(2)} ₸ each.
+                </div>
             </div>
-            <div>
+            <div class="text-end d-flex align-items-center gap-3">
+                <span class="fw-bold text-nowrap">${item.totalItemPrice.toFixed(2)} ₸</span>
                 <button class="btn btn-sm btn-outline-danger remove-item-btn" title="Delete">
                     &times;
                 </button>
@@ -264,7 +284,16 @@ function renderPreviewList() {
 
         orderPreviewContent.appendChild(row);
     });
+
+    const totalRow = document.createElement("div");
+    totalRow.className = "d-flex justify-content-between align-items-center mt-3 pt-3 border-top border-2 border-dark fw-bold fs-5";
+    totalRow.innerHTML = `
+        <span>Total:</span>
+        <span class="text-warning">${finalOrderTotal.toFixed(2)} ₸</span>
+    `;
+    orderPreviewContent.appendChild(totalRow);
 }
+
 function removeItemFromOrder(itemId) {
     currentOrder.items = currentOrder.items.filter(item => item.id !== itemId);
     renderPreviewList();
@@ -275,27 +304,42 @@ function removeItemFromOrder(itemId) {
     }
 }
 
-document.getElementById("confirmFinalOrder").onclick = () => {
-    const cleanItems = currentOrder.items.map(item => {
-        return {
-            coffeeId: item.coffeeId,
-            sizeId: item.sizeId,
-            quantity: item.quantity,
-            requests: item.requests.map(req => ({
-                additiveId: req.additiveId,
-                quantity: req.quantity
-            }))
-        };
-    });
+document.getElementById("confirmFinalOrder").onclick = async () => {
+    const cleanItems = currentOrder.items.map(item => ({
+        coffeeId: item.coffeeId,
+        sizeId: item.sizeId,
+        quantity: item.quantity,
+        requests: item.requests.map(req => ({
+            additiveId: req.additiveId,
+            quantity: req.quantity
+        }))
+    }));
 
     const finalPayload = {
         userId: currentUserId,
         items: cleanItems
     };
 
-    console.log("Order sent:", finalPayload);
-    alert("Order create");
-    currentOrder.items = [];
+    try {
+        const response = await fetch("/api/order-processes", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(finalPayload)
+        });
 
-    orderPreviewModal.hide();
+        if (!response.ok) {
+            throw new Error(await response.text());
+        }
+
+        alert("Order has been created!");
+
+        currentOrder.items = [];
+        orderPreviewModal.hide();
+
+    } catch (e) {
+        console.error(e);
+        alert("Failed to create order");
+    }
 };

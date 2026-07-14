@@ -1,6 +1,8 @@
 package org.cook.coffee.controller.api;
 
 import lombok.RequiredArgsConstructor;
+import org.cook.coffee.model.business.OrderIdRequest;
+import org.cook.coffee.model.business.OrderStateResponse;
 import org.cook.coffee.model.order.CreateOrderRequest;
 import org.cook.coffee.model.order.Order;
 import org.cook.coffee.service.interfaces.business.OrderProcessService;
@@ -30,8 +32,8 @@ public class OrderProcessApiController {
 
     @PostMapping("/reserve-stock")
     @PreAuthorize("hasAnyAuthority('ROLE_CAMUNDA', 'ROLE_ADMIN')")
-    public ResponseEntity<Void> reserveStock(@RequestBody Long orderId){
-        orderProcessService.reserveStock(orderId);
+    public ResponseEntity<Void> reserveStock(@RequestBody OrderIdRequest request){
+        orderProcessService.reserveStock(request.getOrderId());
 
         return ResponseEntity.noContent()
                 .build();
@@ -39,8 +41,8 @@ public class OrderProcessApiController {
 
     @PostMapping("/commit-stock")
     @PreAuthorize("hasAnyAuthority('ROLE_CAMUNDA', 'ROLE_ADMIN')")
-    public ResponseEntity<Void> commitStock(@RequestBody Long orderId){
-        orderProcessService.commitStock(orderId);
+    public ResponseEntity<Void> commitStock(@RequestBody OrderIdRequest request){
+        orderProcessService.commitStock(request.getOrderId());
 
         return ResponseEntity.noContent()
                 .build();
@@ -48,8 +50,8 @@ public class OrderProcessApiController {
 
     @PostMapping("/release-stock")
     @PreAuthorize("hasAnyAuthority('ROLE_CAMUNDA', 'ROLE_ADMIN')")
-    public ResponseEntity<Void> releaseStock(@RequestBody Long orderId){
-        orderProcessService.releaseStock(orderId);
+    public ResponseEntity<Void> releaseStock(@RequestBody OrderIdRequest request){
+        orderProcessService.releaseStock(request.getOrderId());
 
         return ResponseEntity.noContent()
                 .build();
@@ -57,47 +59,46 @@ public class OrderProcessApiController {
 
     @PostMapping("/confirm-payment")
     @PreAuthorize("hasAnyAuthority('ROLE_CAMUNDA', 'ROLE_ADMIN')")
-    public ResponseEntity<Void> confirmPayment(@RequestBody Long orderId){
-        orderProcessService.confirmPayment(orderId);
+    public ResponseEntity<OrderStateResponse> confirmPayment(@RequestBody OrderIdRequest request){
+        OrderStateResponse response = orderProcessService.confirmPayment(request.getOrderId());
 
-        return ResponseEntity.noContent()
-                .build();
+        return ResponseEntity.ok()
+                .body(response);
     }
 
-    @PostMapping("/start-prepartion")
+    @PostMapping("/start-preparation")
     @PreAuthorize("hasAnyAuthority('ROLE_CAMUNDA', 'ROLE_ADMIN')")
-    public ResponseEntity<Void> startPreparation(@RequestBody Long orderId){
-        orderProcessService.startPreparation(orderId);
+    public ResponseEntity<OrderStateResponse> startPreparation(@RequestBody OrderIdRequest request){
+        OrderStateResponse response = orderProcessService.startPreparation(request.getOrderId());
 
-        return ResponseEntity.noContent()
-                .build();
+        return ResponseEntity.ok()
+                .body(response);
     }
 
     @PostMapping("/mark-ready")
     @PreAuthorize("hasAnyAuthority('ROLE_CAMUNDA', 'ROLE_ADMIN', 'ROLE_WORKER')")
-    public ResponseEntity<Void> markReady(@RequestBody Long orderId){
-        orderProcessService.markReady(orderId);
+    public ResponseEntity<OrderStateResponse> markReady(@RequestBody OrderIdRequest request){
+        OrderStateResponse response = orderProcessService.markReady(request.getOrderId());
 
-        return ResponseEntity.noContent()
-                .build();
+        return ResponseEntity.ok()
+                .body(response);
     }
 
     @PostMapping("/complete-order")
     @PreAuthorize("hasAnyAuthority('ROLE_CAMUNDA', 'ROLE_ADMIN', 'ROLE_WORKER')")
-    public ResponseEntity<Void> completeOrder(@RequestBody Long orderId){
-        orderProcessService.completeOrder(orderId);
+    public ResponseEntity<OrderStateResponse> completeOrder(@RequestBody OrderIdRequest request){
+        OrderStateResponse response = orderProcessService.completeOrder(request.getOrderId());
 
-        return ResponseEntity.noContent()
-                .build();
+        return ResponseEntity.ok()
+                .body(response);
     }
 
     @PostMapping("/cancel-order")
     @PreAuthorize("hasAnyAuthority('ROLE_CAMUNDA', 'ROLE_ADMIN')")
-    public ResponseEntity<Void> cancelOrder(@RequestBody Long orderId){
-        orderProcessService.cancelOrder(orderId);
+    public ResponseEntity<OrderStateResponse> cancelOrder(@RequestBody OrderIdRequest request){
+        OrderStateResponse response = orderProcessService.cancelOrder(request.getOrderId());
 
-        return ResponseEntity.noContent()
-                .build();
+        return ResponseEntity.ok()
+                .body(response);
     }
-
 }

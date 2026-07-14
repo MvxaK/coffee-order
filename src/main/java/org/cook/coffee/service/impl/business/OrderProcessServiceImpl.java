@@ -10,6 +10,7 @@ import org.cook.coffee.mapper.order.OrderMapper;
 import org.cook.coffee.model.PaymentStatus;
 import org.cook.coffee.model.business.OrderItemAdditiveCalculationResult;
 import org.cook.coffee.model.business.OrderItemCalculationResult;
+import org.cook.coffee.model.business.OrderStateResponse;
 import org.cook.coffee.model.business.PriceCalculationResult;
 import org.cook.coffee.model.order.*;
 import org.cook.coffee.repository.UserRepository;
@@ -31,8 +32,8 @@ public class OrderProcessServiceImpl implements OrderProcessService {
     private final StockService stockService;
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
-    private final OrderMapper orderMapper;
     private final OrderStatusService orderStatusService;
+    private final OrderMapper orderMapper;
 
     @Override
     @Transactional
@@ -54,7 +55,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
 
         order.setOrderItems(orderItems);
 
-        return orderMapper.toModel(orderRepository.save(order));
+        return  orderMapper.toModel(orderRepository.save(order));
     }
 
     @Override
@@ -101,54 +102,60 @@ public class OrderProcessServiceImpl implements OrderProcessService {
 
     @Override
     @Transactional
-    public void confirmPayment(Long orderId) {
+    public OrderStateResponse confirmPayment(Long orderId) {
         OrderEntity order = getOrder(orderId);
 
-        orderStatusService.markPaid(order);
-        paymentService.markPaid(order);
+        if(orderId % 3 == 0){
+            paymentService.fail(order);
+        }else{
+            orderStatusService.markPaid(order);
+            paymentService.markPaid(order);
+        }
 
-        saveOrder(order);
+        return saveOrder(order);
     }
 
     @Override
     @Transactional
-    public void startPreparation(Long orderId) {
+    public OrderStateResponse startPreparation(Long orderId) {
         OrderEntity order = getOrder(orderId);
 
         orderStatusService.markPreparing(order);
 
-        saveOrder(order);
+        return saveOrder(order);
     }
 
     @Override
     @Transactional
-    public void markReady(Long orderId) {
+    public OrderStateResponse markReady(Long orderId) {
         OrderEntity order = getOrder(orderId);
 
         orderStatusService.markReady(order);
 
-        saveOrder(order);
+        return saveOrder(order);
     }
 
     @Override
     @Transactional
-    public void completeOrder(Long orderId) {
+    public OrderStateResponse completeOrder(Long orderId) {
         OrderEntity order = getOrder(orderId);
 
         orderStatusService.markCompleted(order);
 
-        saveOrder(order);
+        return saveOrder(order);
     }
 
     @Override
     @Transactional
-    public void cancelOrder(Long orderId) {
+    public OrderStateResponse cancelOrder(Long orderId) {
         OrderEntity order = getOrder(orderId);
 
         orderStatusService.cancel(order);
-        paymentService.refund(order);
+        if(!order.getPaymentStatus().equals(PaymentStatus.FAILED)){
+            paymentService.refund(order);
+        }
 
-        saveOrder(order);
+        return saveOrder(order);
     }
 
 
@@ -157,9 +164,11 @@ public class OrderProcessServiceImpl implements OrderProcessService {
                 .orElseThrow(() -> new EntityNotFoundException("There is no order with id -> " + orderId));
     }
 
-    private void saveOrder(OrderEntity order) {
+    private OrderStateResponse saveOrder(OrderEntity order) {
         order.setUpdatedAt(LocalDateTime.now());
-        orderRepository.save(order);
+        order =  orderRepository.save(order);
+
+        return new OrderStateResponse(order.getId(), order.getOrderStatus(), order.getPaymentStatus());
     }
 
     private List<OrderItemEntity> buildOrderItems(OrderEntity order, PriceCalculationResult result){

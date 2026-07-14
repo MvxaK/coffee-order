@@ -21,7 +21,7 @@ public class CoffeeServiceImpl implements CoffeeService {
 
     @Override
     public Coffee getById(Long id) {
-        CoffeeEntity entity = coffeeRepository.findById(id)
+        CoffeeEntity entity = coffeeRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new EntityNotFoundException("There is no coffee with id -> " + id));
 
         return coffeeMapper.toModel(entity);
@@ -29,7 +29,7 @@ public class CoffeeServiceImpl implements CoffeeService {
 
     @Override
     public List<Coffee> getAll() {
-        return coffeeRepository.findAll()
+        return coffeeRepository.findAllDeletedFalse()
                 .stream()
                 .map(coffeeMapper::toModel)
                 .toList();

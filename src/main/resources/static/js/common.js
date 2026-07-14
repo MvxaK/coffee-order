@@ -1,14 +1,3 @@
-(function immediateAuthCheck() {
-    const publicPaths = ['/auth/login','/auth/register','/'];
-    const currentPath = window.location.pathname;
-    const isPublic = publicPaths.some(path => currentPath === path || currentPath.startsWith(path + '/'));
-
-    if (!isPublic && !isAuthenticated()) {
-        console.log("Not authenticated, redirecting...");
-        window.location.href = '/auth/login';
-    }
-})();
-
 function getToken() {
     return localStorage.getItem('token');
 }
@@ -117,11 +106,10 @@ function updateNavigation() {
     rightSideLinks.innerHTML = authHtml;
 }
 
-function checkAuth(publicPaths = ['/auth/login','/auth/register','/']) {
-    const currentPath = window.location.pathname;
-    const isPublic = publicPaths.some(path => currentPath === path || currentPath.startsWith(path + '/'));
-    if (!isAuthenticated() && !isPublic)
+function checkAuth() {
+    if (!isAuthenticated() && !isPublicPath(window.location.pathname)) {
         window.location.href = '/auth/login';
+    }
 }
 
 async function makeAuthenticatedRequest(url, options = {}) {
@@ -136,20 +124,30 @@ async function makeAuthenticatedRequest(url, options = {}) {
     return res;
 }
 
+function isPublicPath(path) {
+    const publicPaths = ['/auth/login', '/auth/register', '/'];
+    return publicPaths.some(p => {
+        if (p === '/') return path === '/';
+        return path === p || path.startsWith(p + '/');
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const currentPath = window.location.pathname;
+
+    if (!isPublicPath(currentPath) && !isAuthenticated()) {
+        console.log("Not authenticated, redirecting...");
+        window.location.href = '/auth/login';
+        return;
+    }
+
+    updateNavigation();
+});
+
 window.addEventListener('focus', () => {
     if (!isAuthenticated() && !isPublicPath(window.location.pathname)) {
         window.location.href = '/auth/login';
     }
-});
-
-function isPublicPath(path) {
-    const publicPaths = ['/auth/login','/auth/register','/'];
-    return publicPaths.some(p => path === p || path.startsWith(p + '/'));
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    checkAuth();
-    updateNavigation();
 });
 
 window.addEventListener('storage', (e) => {

@@ -1,6 +1,7 @@
 package org.cook.coffee.security.config;
 
 import lombok.RequiredArgsConstructor;
+import org.cook.coffee.security.jwt.CamundaAuthenticationFilter;
 import org.cook.coffee.security.jwt.JwtAuthenticationEntryPoint;
 import org.cook.coffee.security.jwt.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +23,7 @@ public class SecurityConfig {
 
     private final JwtAuthenticationEntryPoint jwtAuthEntryPoint;
     private final JwtAuthenticationFilter jwtAuthFilter;
+    private final CamundaAuthenticationFilter camundaAuthFilter;
     private final AuthenticationProvider authProvider;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
@@ -35,6 +37,7 @@ public class SecurityConfig {
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authProvider)
+                .addFilterBefore(camundaAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(jwtAuthEntryPoint)
@@ -43,6 +46,5 @@ public class SecurityConfig {
 
         return httpSecurity.build();
     }
-
 
 }

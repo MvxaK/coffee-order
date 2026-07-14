@@ -21,7 +21,7 @@ public class AdditiveServiceImpl implements AdditiveService {
 
     @Override
     public Additive getById(Long id) {
-        AdditiveEntity entity = additiveRepository.findById(id)
+        AdditiveEntity entity = additiveRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new EntityNotFoundException("There is no additive with id -> " + id));
 
         return additiveMapper.toModel(entity);
@@ -29,7 +29,7 @@ public class AdditiveServiceImpl implements AdditiveService {
 
     @Override
     public List<Additive> getAll() {
-        return additiveRepository.findAll()
+        return additiveRepository.findAllDeletedFalse()
                 .stream()
                 .map(additiveMapper::toModel)
                 .toList();

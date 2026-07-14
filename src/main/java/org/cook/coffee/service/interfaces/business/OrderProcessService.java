@@ -1,5 +1,6 @@
 package org.cook.coffee.service.interfaces.business;
 
+import org.cook.coffee.model.business.OrderStateResponse;
 import org.cook.coffee.model.order.CreateOrderRequest;
 import org.cook.coffee.model.order.Order;
 import org.springframework.stereotype.Service;
@@ -11,10 +12,10 @@ public interface OrderProcessService {
     void reserveStock(Long orderId);
     void releaseStock(Long orderId);
     void commitStock(Long orderId);
-    void confirmPayment(Long orderId);
-    void startPreparation(Long orderId);
-    void markReady(Long orderId);
-    void completeOrder(Long orderId);
-    void cancelOrder(Long orderId);
+    OrderStateResponse confirmPayment(Long orderId);
+    OrderStateResponse startPreparation(Long orderId);
+    OrderStateResponse markReady(Long orderId);
+    OrderStateResponse completeOrder(Long orderId);
+    OrderStateResponse cancelOrder(Long orderId);
 
 }

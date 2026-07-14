@@ -17,5 +17,6 @@ public class Additive {
     private Integer stock;
     private Integer reservedStock;
     private String url;
+    private boolean deleted;
 
 }
