@@ -10,6 +10,7 @@ import org.cook.coffee.service.interfaces.AdditiveService;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +26,6 @@ public class AdditiveServiceImpl implements AdditiveService {
     @Override
     @Cacheable(value = "ADDITIVE_CACHE", key = "#id")
     public Additive getById(Long id) {
-        System.out.println("YRYRYRYRYRYRYRYRYRY");
         AdditiveEntity entity = additiveRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new EntityNotFoundException("There is no additive with id -> " + id));
 
@@ -35,7 +35,6 @@ public class AdditiveServiceImpl implements AdditiveService {
     @Override
     @Cacheable(value = "ADDITIVES_CACHE", key = "'all'")
     public List<Additive> getAll() {
-        System.out.println("YRYRYRYRYRYRYRYRYRY");
         return additiveRepository.findAllDeletedFalse()
                 .stream()
                 .map(additiveMapper::toModel)
@@ -44,7 +43,10 @@ public class AdditiveServiceImpl implements AdditiveService {
 
     @Override
     @Transactional
-    @CachePut(value = "ADDITIVE_CACHE", key = "#result.getId()")
+    @Caching(
+            put = @CachePut(value = "ADDITIVE_CACHE", key = "#result.id"),
+            evict = @CacheEvict(value = "ADDITIVES_CACHE", allEntries = true)
+    )
     public Additive create(Additive additive) {
         AdditiveEntity entity = additiveMapper.toEntity(additive);
 
@@ -53,7 +55,10 @@ public class AdditiveServiceImpl implements AdditiveService {
 
     @Override
     @Transactional
-    @CachePut(value = "ADDITIVE_CACHE", key = "#result.getId()")
+    @Caching(
+            put = @CachePut(value = "ADDITIVE_CACHE", key = "#result.id"),
+            evict = @CacheEvict(value = "ADDITIVES_CACHE", allEntries = true)
+    )
     public Additive update(Long id, Additive additive) {
         AdditiveEntity entity = additiveRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("There is no additive with id -> " + id));
@@ -69,7 +74,12 @@ public class AdditiveServiceImpl implements AdditiveService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "ADDITIVE_CACHE", key = "#id")
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "ADDITIVE_CACHE", key = "#id"),
+                    @CacheEvict(value = "ADDITIVES_CACHE", allEntries = true)
+            }
+    )
     public void delete(Long id) {
         if (!additiveRepository.existsById(id)) {
             throw new EntityNotFoundException("There is no additive with id -> " + id);

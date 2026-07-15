@@ -10,6 +10,7 @@ import org.cook.coffee.service.interfaces.CoffeeSizeService;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,11 +23,9 @@ public class CoffeeSizeServiceImpl implements CoffeeSizeService {
     private final CoffeeSizeRepository coffeeSizeRepository;
     private final CoffeeSizeMapper coffeeSizeMapper;
 
-
     @Override
     @Cacheable(value = "COFFEE_SIZE_CACHE", key = "#id")
     public CoffeeSize getById(Long id) {
-        System.out.println("KOKOKOKOKOKOKOKOKOK");
         CoffeeSizeEntity entity = coffeeSizeRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("There is no coffeeSize with id -> " + id));
 
@@ -36,7 +35,6 @@ public class CoffeeSizeServiceImpl implements CoffeeSizeService {
     @Override
     @Cacheable(value = "COFFEE_SIZES_CACHE", key = "'all'")
     public List<CoffeeSize> getAll() {
-        System.out.println("KOKOKOKOKOKOKOKOKOK");
         return coffeeSizeRepository.findAll()
                 .stream()
                 .map(coffeeSizeMapper::toModel)
@@ -45,7 +43,10 @@ public class CoffeeSizeServiceImpl implements CoffeeSizeService {
 
     @Override
     @Transactional
-    @CachePut(value = "COFFEE_SIZE_CACHE", key = "#result.getId()")
+    @Caching(
+            put = @CachePut(value = "COFFEE_SIZE_CACHE", key = "#result.getId()"),
+            evict = @CacheEvict(value = "COFFEE_SIZES_CACHE", allEntries = true)
+    )
     public CoffeeSize create(CoffeeSize coffeeSize) {
         CoffeeSizeEntity entity = coffeeSizeMapper.toEntity(coffeeSize);
 
@@ -54,7 +55,10 @@ public class CoffeeSizeServiceImpl implements CoffeeSizeService {
 
     @Override
     @Transactional
-    @CachePut(value = "COFFEE_SIZE_CACHE", key = "#result.getId()")
+    @Caching(
+            put = @CachePut(value = "COFFEE_SIZE_CACHE", key = "#result.getId()"),
+            evict = @CacheEvict(value = "COFFEE_SIZES_CACHE", allEntries = true)
+    )
     public CoffeeSize update(Long id, CoffeeSize coffeeSize) {
         CoffeeSizeEntity entity = coffeeSizeRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("There is no coffeeSize with id -> " + id));
@@ -67,7 +71,12 @@ public class CoffeeSizeServiceImpl implements CoffeeSizeService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "COFFEE_SIZE_CACHE", key = "#id")
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "COFFEE_SIZE_CACHE", key = "#id"),
+                    @CacheEvict(value = "COFFEE_SIZES_CACHE", allEntries = true)
+            }
+    )
     public void delete(Long id) {
         if (!coffeeSizeRepository.existsById(id)) {
             throw new EntityNotFoundException("There is no coffeeSize with id -> " + id);
