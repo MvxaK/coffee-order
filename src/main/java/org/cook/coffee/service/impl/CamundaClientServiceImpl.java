@@ -30,8 +30,7 @@ public class CamundaClientServiceImpl implements CamundaClientService {
     public void startOrderProcess(CreateOrderRequest request) throws JsonProcessingException {
         Map<String, Object> variables = new HashMap<>();
 
-        variables.put(
-                "createOrderRequest",
+        variables.put("createOrderRequest",
                 Map.of(
                         "value", objectMapper.writeValueAsString(request),
                         "type", "String"
