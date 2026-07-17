@@ -1,6 +1,7 @@
 package org.cook.coffee.service.impl.business;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.cook.coffee.entity.AdditiveEntity;
 import org.cook.coffee.entity.CoffeeEntity;
 import org.cook.coffee.repository.AdditiveRepository;
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class StockServiceImpl implements StockService {
 
     private final CoffeeRepository coffeeRepository;
@@ -37,7 +39,8 @@ public class StockServiceImpl implements StockService {
         validateQuantity(quantity);
 
         if (coffee.getReservedStock() < quantity) {
-            throw new IllegalArgumentException("Cannot release more reserved stock than exists");
+            log.info("Coffee stock already released");
+            return;
         }
 
         coffee.setReservedStock(coffee.getReservedStock() - quantity);
@@ -50,7 +53,7 @@ public class StockServiceImpl implements StockService {
         validateQuantity(quantity);
 
         if (coffee.getReservedStock() < quantity) {
-            throw new IllegalArgumentException("Cannot release more reserved stock than exists");
+            throw new IllegalArgumentException("Cannot commit stock: reserved stock is less than requested quantity");
         }
 
         coffee.setReservedStock(coffee.getReservedStock() - quantity);
@@ -79,7 +82,8 @@ public class StockServiceImpl implements StockService {
         validateQuantity(quantity);
 
         if (additive.getReservedStock() < quantity) {
-            throw new IllegalArgumentException("Cannot release more reserved stock than exists");
+            log.info("Additive stock already released");
+            return;
         }
 
         additive.setReservedStock(additive.getReservedStock() - quantity);
@@ -92,7 +96,7 @@ public class StockServiceImpl implements StockService {
         validateQuantity(quantity);
 
         if (additive.getReservedStock() < quantity) {
-            throw new IllegalArgumentException("Cannot release more reserved stock than exists");
+            throw new IllegalArgumentException("Cannot commit stock: reserved stock is less than requested quantity");
         }
 
         additive.setReservedStock(additive.getReservedStock() - quantity);

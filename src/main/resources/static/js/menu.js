@@ -321,7 +321,7 @@ document.getElementById("confirmFinalOrder").onclick = async () => {
     };
 
     try {
-        const response = await fetch("/api/order-processes", {
+        const response = await fetch("/api/order-processes/start", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

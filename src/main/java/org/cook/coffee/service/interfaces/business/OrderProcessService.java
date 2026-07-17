@@ -1,6 +1,6 @@
 package org.cook.coffee.service.interfaces.business;
 
-import org.cook.coffee.model.business.OrderStateResponse;
+import org.cook.coffee.model.orderResponse.OrderStateResponse;
 import org.cook.coffee.model.order.CreateOrderRequest;
 import org.cook.coffee.model.order.Order;
 import org.springframework.stereotype.Service;
@@ -17,5 +17,6 @@ public interface OrderProcessService {
     OrderStateResponse markReady(Long orderId);
     OrderStateResponse completeOrder(Long orderId);
     OrderStateResponse cancelOrder(Long orderId);
+    OrderStateResponse refundOrder(Long orderId);
 
 }

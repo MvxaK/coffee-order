@@ -2,7 +2,7 @@ package org.cook.coffee.service.impl.business;
 
 import lombok.RequiredArgsConstructor;
 import org.cook.coffee.entity.order.OrderEntity;
-import org.cook.coffee.model.order.OrderStatus;
+import org.cook.coffee.model.OrderStatus;
 import org.cook.coffee.service.interfaces.business.OrderStatusService;
 import org.springframework.stereotype.Service;
 
@@ -48,7 +48,7 @@ public class OrderStatusServiceImpl implements OrderStatusService {
 
     @Override
     public void cancel(OrderEntity order) {
-        if(!order.getOrderStatus().equals(OrderStatus.CREATED)){
+        if(order.getOrderStatus().equals(OrderStatus.COMPLETED)){
             throw new IllegalArgumentException("Order is completed, cannot cancel");
         }
 

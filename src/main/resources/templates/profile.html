@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>My Profile</title>
+    <th:block layout:fragment="page-specific-head">
+        <link rel="stylesheet" href="/css/profile.css">
+    </th:block>
+</head>
+<body>
+<main layout:fragment="content">
+    <div class="container py-5">
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm profile-card">
+                    <div class="card-body">
+                        <h3 class="fw-bold text-center mb-4">My Profile</h3>
+                        <div class="profile-info">
+                            <div class="profile-item">
+                                <span class="profile-label">Email</span>
+                                <span id="userEmail" class="profile-value">-</span>
+                            </div>
+                            <div class="profile-item">
+                                <span class="profile-label">Role</span>
+                                <span id="userRole" class="badge bg-warning text-dark">USER</span>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="profile-stats">
+                            <div class="stat-card">
+                                <h3 id="ordersCount">0</h3>
+                                <span>Total Orders</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h3 class="fw-bold mb-0">My Orders</h3>
+                            <span id="ordersBadge" class="badge bg-warning text-dark">0</span>
+                        </div>
+                        <div id="ordersContainer">
+                            <div class="text-center py-5 text-muted">
+                                <i class="bi bi-cup-hot fs-1 d-block mb-3"></i>
+                                <h5>No orders yet</h5>
+                                <p class="mb-3">Looks like you haven't placed any orders.</p>
+                                <a th:href="@{/menu}" class="btn btn-warning">Go to Menu</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<th:block layout:fragment="page-specific-scripts-bottom">
+    <script src="/js/profile.js"></script>
+</th:block>
+</body>
+</html>

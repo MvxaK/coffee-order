@@ -1,4 +1,4 @@
-package org.cook.coffee.model.business;
+package org.cook.coffee.model.order;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

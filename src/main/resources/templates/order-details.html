@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>Order Details</title>
+    <th:block layout:fragment="page-specific-head">
+        <link rel="stylesheet" href="/css/order-details.css">
+    </th:block>
+</head>
+<body>
+<main layout:fragment="content">
+    <div class="container py-5">
+        <div class="mb-4">
+            <button id="backButton" class="btn btn-outline-warning">
+                ← Back to Profile
+            </button>
+        </div>
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                    <div>
+                        <h2 class="fw-bold mb-2">Order #<span id="orderId"></span></h2>
+
+                        <div class="text-muted">
+                            <span id="createdAt"></span>
+                        </div>
+                    </div>
+
+                    <div class="text-end">
+                        <div class="mb-2">
+                            <span id="orderStatus" class="order-status"></span>
+                        </div>
+
+                        <div>
+                            <span id="paymentStatus" class="payment-status"></span>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="summary-item">
+                            <span class="summary-label">Items</span>
+                            <span id="itemsCount" class="summary-value"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="summary-item">
+                            <span class="summary-label">Total</span>
+                            <span id="totalAmount" class="summary-total"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h3 class="fw-bold mb-4">Order Items</h3>
+
+                <div id="itemsContainer"></div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<th:block layout:fragment="page-specific-scripts-bottom">
+    <script src="/js/order-details.js"></script>
+</th:block>
+
+</body>
+</html>

@@ -3,6 +3,7 @@ package org.cook.coffee.model.order;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.cook.coffee.model.OrderStatus;
 import org.cook.coffee.model.PaymentStatus;
 
 import java.math.BigDecimal;

@@ -91,11 +91,8 @@ function updateNavigation() {
         const user = getUser();
 
         authHtml = `
-            <li class="nav-item">
-                <a class="nav-link" href="#" onclick="logout()">
-                    <i class="bi bi-box-arrow-right me-1"></i>Logout
-                </a>
-            </li>`;
+            <li class="nav-item"><a class="nav-link" href="#" onclick="logout()"><i class="bi bi-box-arrow-right me-1"></i>Logout</a></li>
+            <li class="nav-item"><a class="nav-link" href="/profile"><i class="bi bi-person me-1"></i>Profile</a></li>`;
 
     } else {
         authHtml = `

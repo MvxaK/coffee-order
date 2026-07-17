@@ -44,7 +44,6 @@ public class CamundaAuthenticationFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
 
-        return !(path.equals("/api/orders")
-                || path.startsWith("/api/orders/"));
+        return !(path.equals("/api/order-processes") || path.startsWith("/api/order-processes/") || path.startsWith("/api/orders/"));
     }
 }

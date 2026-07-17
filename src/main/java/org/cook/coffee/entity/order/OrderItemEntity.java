@@ -34,7 +34,6 @@ public class OrderItemEntity {
 
     private String coffeeName;
     private String sizeName;
-
     private int quantity;
 
     @OneToMany(mappedBy = "orderItem", cascade = CascadeType.ALL, orphanRemoval = true)

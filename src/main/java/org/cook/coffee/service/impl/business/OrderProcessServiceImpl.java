@@ -7,10 +7,11 @@ import org.cook.coffee.entity.order.OrderEntity;
 import org.cook.coffee.entity.order.OrderItemAdditiveEntity;
 import org.cook.coffee.entity.order.OrderItemEntity;
 import org.cook.coffee.mapper.order.OrderMapper;
+import org.cook.coffee.model.OrderStatus;
 import org.cook.coffee.model.PaymentStatus;
 import org.cook.coffee.model.business.OrderItemAdditiveCalculationResult;
 import org.cook.coffee.model.business.OrderItemCalculationResult;
-import org.cook.coffee.model.business.OrderStateResponse;
+import org.cook.coffee.model.orderResponse.OrderStateResponse;
 import org.cook.coffee.model.business.PriceCalculationResult;
 import org.cook.coffee.model.order.*;
 import org.cook.coffee.repository.UserRepository;
@@ -151,9 +152,16 @@ public class OrderProcessServiceImpl implements OrderProcessService {
         OrderEntity order = getOrder(orderId);
 
         orderStatusService.cancel(order);
-        if(!order.getPaymentStatus().equals(PaymentStatus.FAILED)){
-            paymentService.refund(order);
-        }
+
+        return saveOrder(order);
+    }
+
+    @Override
+    @Transactional
+    public OrderStateResponse refundOrder(Long orderId){
+        OrderEntity order = getOrder(orderId);
+
+        paymentService.refund(order);
 
         return saveOrder(order);
     }
@@ -166,7 +174,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
 
     private OrderStateResponse saveOrder(OrderEntity order) {
         order.setUpdatedAt(LocalDateTime.now());
-        order =  orderRepository.save(order);
+        order = orderRepository.save(order);
 
         return new OrderStateResponse(order.getId(), order.getOrderStatus(), order.getPaymentStatus());
     }

@@ -1,4 +1,4 @@
-package org.cook.coffee.model.order;
+package org.cook.coffee.model;
 
 public enum OrderStatus {
 

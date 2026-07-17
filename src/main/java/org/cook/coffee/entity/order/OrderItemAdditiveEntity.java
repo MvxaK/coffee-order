@@ -27,9 +27,7 @@ public class OrderItemAdditiveEntity {
     private AdditiveEntity additive;
 
     private String additiveName;
-
     private BigDecimal price;
-
     private Integer quantity;
 
 }

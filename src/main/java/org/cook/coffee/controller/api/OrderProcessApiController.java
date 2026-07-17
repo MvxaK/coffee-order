@@ -1,8 +1,8 @@
 package org.cook.coffee.controller.api;
 
 import lombok.RequiredArgsConstructor;
-import org.cook.coffee.model.business.OrderIdRequest;
-import org.cook.coffee.model.business.OrderStateResponse;
+import org.cook.coffee.model.order.OrderIdRequest;
+import org.cook.coffee.model.orderResponse.OrderStateResponse;
 import org.cook.coffee.model.order.CreateOrderRequest;
 import org.cook.coffee.model.order.Order;
 import org.cook.coffee.service.interfaces.business.OrderProcessService;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/orders")
+@RequestMapping("/api/order-processes")
 @RequiredArgsConstructor
 public class OrderProcessApiController {
 
@@ -97,6 +97,15 @@ public class OrderProcessApiController {
     @PreAuthorize("hasAnyAuthority('ROLE_CAMUNDA', 'ROLE_ADMIN')")
     public ResponseEntity<OrderStateResponse> cancelOrder(@RequestBody OrderIdRequest request){
         OrderStateResponse response = orderProcessService.cancelOrder(request.getOrderId());
+
+        return ResponseEntity.ok()
+                .body(response);
+    }
+
+    @PostMapping("/refund-order")
+    @PreAuthorize("hasAnyAuthority('ROLE_CAMUNDA', 'ROLE_ADMIN')")
+    public ResponseEntity<OrderStateResponse> refundOrder(@RequestBody OrderIdRequest request){
+        OrderStateResponse response = orderProcessService.refundOrder(request.getOrderId());
 
         return ResponseEntity.ok()
                 .body(response);
