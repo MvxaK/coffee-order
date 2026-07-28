@@ -106,7 +106,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
     public OrderStateResponse confirmPayment(Long orderId) {
         OrderEntity order = getOrder(orderId);
 
-        if(orderId % 3 == 0){
+        if(orderId % 5 == 0){
             paymentService.fail(order);
         }else{
             orderStatusService.markPaid(order);
