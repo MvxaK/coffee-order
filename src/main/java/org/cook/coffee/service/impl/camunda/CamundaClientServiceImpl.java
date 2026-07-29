@@ -38,22 +38,19 @@ public class CamundaClientServiceImpl implements CamundaClientService {
         );
         Map<String, Object> body = Map.of("variables", processVariables);
 
-        ResponseEntity<Map> response = restTemplate.postForEntity(
+        restTemplate.postForEntity(
                 camundaUrl + "/process-definition/key/" + processKey + "/start",
                 body,
-                Map.class
+                Void.class
         );
 
-        Map<String, Object> process = response.getBody();
-
-        String processInstanceId = (String) process.get("id");
     }
 
     @Override
     public void cancelOrderProcess(Long orderId) {
-        Map<String, Object> processVariables = new HashMap<>();
+        Map<String, Object> correlationKeys = new HashMap<>();
 
-        processVariables.put("orderId",
+        correlationKeys.put("orderId",
                 Map.of(
                         "value", orderId,
                         "type", "Integer"
@@ -62,7 +59,7 @@ public class CamundaClientServiceImpl implements CamundaClientService {
 
         Map<String, Object> body = Map.of(
                 "messageName", "OrderCancelled",
-                "processInstanceVariables", processVariables
+                "correlationKeys", correlationKeys
         );
 
         restTemplate.postForEntity(
