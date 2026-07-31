@@ -19,7 +19,7 @@
         <form id="loginForm">
             <div class="mb-3">
                 <label for="email" class="form-label">Email</label>
-                <input type="text" id="email" name="email" class="form-control" placeholder="Enter email" required>
+                <input type="email" id="email" name="email" class="form-control" placeholder="Enter email" required>
             </div>
 
             <div class="mb-3">
@@ -48,6 +48,10 @@
 
             loginForm.addEventListener('submit', async function(event) {
                 event.preventDefault();
+
+                if (!loginForm.reportValidity()) {
+                    return;
+                }
 
                 const formData = new FormData(this);
                 const loginData = {

@@ -58,6 +58,10 @@
             displayMessage('', 'd-none');
 
             registerBtn.addEventListener('click', async function() {
+                if (!registerForm.reportValidity()) {
+                    return;
+                }
+
                 const formData = new FormData(registerForm);
                 const registerData = {
                     email: formData.get('email'),

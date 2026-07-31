@@ -1,0 +1,611 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1067xwx" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.47.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.24.0">
+  <bpmn:process id="CoffeeOrderProcess" name="CoffeeOrderProcess" isExecutable="true" camunda:historyTimeToLive="3">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>Flow_0050clh</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_0050clh" sourceRef="StartEvent_1" targetRef="Activity_0bbd9u2" />
+    <bpmn:serviceTask id="Activity_0bbd9u2" name="Создать заказ">
+      <bpmn:extensionElements>
+        <camunda:connector>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="url">http://localhost:8082/api/order-processes</camunda:inputParameter>
+            <camunda:inputParameter name="method">POST</camunda:inputParameter>
+            <camunda:inputParameter name="payload">${createOrderRequest}</camunda:inputParameter>
+            <camunda:inputParameter name="headers">${coffeeServiceAuth.headers()}</camunda:inputParameter>
+            <camunda:outputParameter name="orderId">
+              <camunda:script scriptFormat="javascript">JSON.parse(response).id;</camunda:script>
+            </camunda:outputParameter>
+            <camunda:outputParameter name="orderStatus">
+              <camunda:script scriptFormat="javascript">JSON.parse(response).orderStatus;</camunda:script>
+            </camunda:outputParameter>
+            <camunda:outputParameter name="paymentStatus">
+              <camunda:script scriptFormat="javascript">JSON.parse(response).paymentStatus;</camunda:script>
+            </camunda:outputParameter>
+            <camunda:outputParameter name="userId">
+              <camunda:script scriptFormat="javascript">JSON.parse(response).userId;</camunda:script>
+            </camunda:outputParameter>
+          </camunda:inputOutput>
+          <camunda:connectorId>http-connector</camunda:connectorId>
+        </camunda:connector>
+        <camunda:executionListener event="end">
+          <camunda:script scriptFormat="javascript">execution.removeVariable("createOrderRequest");</camunda:script>
+        </camunda:executionListener>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0050clh</bpmn:incoming>
+      <bpmn:outgoing>Flow_0us2dr0</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0us2dr0" sourceRef="Activity_0bbd9u2" targetRef="Activity_0y089pi" />
+    <bpmn:serviceTask id="Activity_0y089pi" name="Резервация ингредиентов">
+      <bpmn:extensionElements>
+        <camunda:connector>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="url">http://localhost:8082/api/order-processes/reserve-stock</camunda:inputParameter>
+            <camunda:inputParameter name="method">POST</camunda:inputParameter>
+            <camunda:inputParameter name="payload">
+              <camunda:script scriptFormat="javascript">JSON.stringify({
+    orderId: execution.getVariable("orderId")
+});</camunda:script>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="headers">${coffeeServiceAuth.headers()}</camunda:inputParameter>
+          </camunda:inputOutput>
+          <camunda:connectorId>http-connector</camunda:connectorId>
+        </camunda:connector>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0us2dr0</bpmn:incoming>
+      <bpmn:outgoing>Flow_0ka97r7</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0ka97r7" sourceRef="Activity_0y089pi" targetRef="Activity_0va55n0" />
+    <bpmn:serviceTask id="Activity_0va55n0" name="Обработка платежа" camunda:asyncBefore="true">
+      <bpmn:extensionElements>
+        <camunda:connector>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="url">http://localhost:8082/api/order-processes/confirm-payment</camunda:inputParameter>
+            <camunda:inputParameter name="method">POST</camunda:inputParameter>
+            <camunda:inputParameter name="payload">
+              <camunda:script scriptFormat="javascript">JSON.stringify({
+    orderId: execution.getVariable("orderId")
+});</camunda:script>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="headers">${coffeeServiceAuth.headers()}</camunda:inputParameter>
+            <camunda:outputParameter name="orderStatus">
+              <camunda:script scriptFormat="javascript">JSON.parse(response).orderStatus;</camunda:script>
+            </camunda:outputParameter>
+            <camunda:outputParameter name="paymentStatus">
+              <camunda:script scriptFormat="javascript">JSON.parse(response).paymentStatus;</camunda:script>
+            </camunda:outputParameter>
+          </camunda:inputOutput>
+          <camunda:connectorId>http-connector</camunda:connectorId>
+        </camunda:connector>
+        <camunda:failedJobRetryTimeCycle>R5/PT1M</camunda:failedJobRetryTimeCycle>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0ka97r7</bpmn:incoming>
+      <bpmn:outgoing>Flow_08sq6i0</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_08sq6i0" sourceRef="Activity_0va55n0" targetRef="Gateway_0imzce6" />
+    <bpmn:serviceTask id="Activity_15eay34" name="Ошибка - Отмена резервации" camunda:asyncBefore="true">
+      <bpmn:extensionElements>
+        <camunda:connector>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="url">http://localhost:8082/api/order-processes/release-stock</camunda:inputParameter>
+            <camunda:inputParameter name="method">POST</camunda:inputParameter>
+            <camunda:inputParameter name="payload">
+              <camunda:script scriptFormat="javascript">JSON.stringify({
+    orderId: execution.getVariable("orderId")
+});</camunda:script>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="headers">${coffeeServiceAuth.headers()}</camunda:inputParameter>
+          </camunda:inputOutput>
+          <camunda:connectorId>http-connector</camunda:connectorId>
+        </camunda:connector>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1jmpk6v</bpmn:incoming>
+      <bpmn:outgoing>Flow_0iwtk8v</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="Event_0dnx34h">
+      <bpmn:incoming>Flow_08cbr1j</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0iwtk8v" sourceRef="Activity_15eay34" targetRef="Activity_1v00ryk" />
+    <bpmn:serviceTask id="Activity_1v00ryk" name="Ошибка - Отмена заказа">
+      <bpmn:extensionElements>
+        <camunda:connector>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="url">http://localhost:8082/api/order-processes/cancel-order</camunda:inputParameter>
+            <camunda:inputParameter name="method">POST</camunda:inputParameter>
+            <camunda:inputParameter name="payload">
+              <camunda:script scriptFormat="javascript">JSON.stringify({
+    orderId: execution.getVariable("orderId")
+});</camunda:script>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="headers">${coffeeServiceAuth.headers()}</camunda:inputParameter>
+            <camunda:outputParameter name="orderStatus">
+              <camunda:script scriptFormat="javascript">JSON.parse(response).orderStatus;</camunda:script>
+            </camunda:outputParameter>
+            <camunda:outputParameter name="paymentStatus">
+              <camunda:script scriptFormat="javascript">JSON.parse(response).paymentStatus;</camunda:script>
+            </camunda:outputParameter>
+          </camunda:inputOutput>
+          <camunda:connectorId>http-connector</camunda:connectorId>
+        </camunda:connector>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0iwtk8v</bpmn:incoming>
+      <bpmn:outgoing>Flow_08cbr1j</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_08cbr1j" sourceRef="Activity_1v00ryk" targetRef="Event_0dnx34h" />
+    <bpmn:serviceTask id="Activity_0immcfn" name="Подтвердить резервацию" camunda:asyncBefore="true">
+      <bpmn:extensionElements>
+        <camunda:connector>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="url">http://localhost:8082/api/order-processes/commit-stock</camunda:inputParameter>
+            <camunda:inputParameter name="method">POST</camunda:inputParameter>
+            <camunda:inputParameter name="payload">
+              <camunda:script scriptFormat="javascript">JSON.stringify({
+    orderId: execution.getVariable("orderId")
+});</camunda:script>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="headers">${coffeeServiceAuth.headers()}</camunda:inputParameter>
+          </camunda:inputOutput>
+          <camunda:connectorId>http-connector</camunda:connectorId>
+        </camunda:connector>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0le2jbk</bpmn:incoming>
+      <bpmn:outgoing>Flow_0nyer0u</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0nyer0u" sourceRef="Activity_0immcfn" targetRef="Activity_00vjao2" />
+    <bpmn:serviceTask id="Activity_00vjao2" name="Начать готовку">
+      <bpmn:extensionElements>
+        <camunda:connector>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="url">http://localhost:8082/api/order-processes/start-preparation</camunda:inputParameter>
+            <camunda:inputParameter name="method">POST</camunda:inputParameter>
+            <camunda:inputParameter name="payload">
+              <camunda:script scriptFormat="javascript">JSON.stringify({
+    orderId: execution.getVariable("orderId")
+});</camunda:script>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="headers">${coffeeServiceAuth.headers()}</camunda:inputParameter>
+            <camunda:outputParameter name="orderStatus">
+              <camunda:script scriptFormat="javascript">JSON.parse(response).orderStatus;</camunda:script>
+            </camunda:outputParameter>
+            <camunda:outputParameter name="paymentStatus">
+              <camunda:script scriptFormat="javascript">JSON.parse(response).paymentStatus;</camunda:script>
+            </camunda:outputParameter>
+          </camunda:inputOutput>
+          <camunda:connectorId>http-connector</camunda:connectorId>
+        </camunda:connector>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0nyer0u</bpmn:incoming>
+      <bpmn:outgoing>Flow_1ytz6vf</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1ytz6vf" sourceRef="Activity_00vjao2" targetRef="Activity_0rz544g" />
+    <bpmn:userTask id="Activity_12s7f2m" name="Приготовить заказ" camunda:formKey="" camunda:candidateUsers="worker" camunda:candidateGroups="coffee-worker">
+      <bpmn:documentation>Приготовьте заказ согласно составу.
+После завершения нажмите Complete.</bpmn:documentation>
+      <bpmn:extensionElements />
+      <bpmn:incoming>Flow_0bw1yis</bpmn:incoming>
+      <bpmn:outgoing>Flow_1ekn56h</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_0imzce6">
+      <bpmn:incoming>Flow_08sq6i0</bpmn:incoming>
+      <bpmn:outgoing>Flow_0le2jbk</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1jmpk6v</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_0le2jbk" sourceRef="Gateway_0imzce6" targetRef="Activity_0immcfn">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${paymentStatus == 'PAID'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_1jmpk6v" sourceRef="Gateway_0imzce6" targetRef="Activity_15eay34">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${paymentStatus == 'FAILED'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:userTask id="Activity_0152lk5" name="Подтвердить отмену" camunda:formKey="" camunda:candidateUsers="worker" camunda:candidateGroups="coffee-worker">
+      <bpmn:documentation>Просмотрите информацию об отмене и примите решение.</bpmn:documentation>
+      <bpmn:extensionElements />
+      <bpmn:incoming>Flow_1w24s4u</bpmn:incoming>
+      <bpmn:outgoing>Flow_1wip0g4</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_0e4kyud">
+      <bpmn:incoming>Flow_1wip0g4</bpmn:incoming>
+      <bpmn:outgoing>Flow_1m219b5</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0gg00zp</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_1wip0g4" sourceRef="Activity_0152lk5" targetRef="Gateway_0e4kyud" />
+    <bpmn:serviceTask id="Activity_15cabr0" name="Отмена заказа">
+      <bpmn:extensionElements>
+        <camunda:connector>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="url">http://localhost:8082/api/order-processes/cancel-order</camunda:inputParameter>
+            <camunda:inputParameter name="method">POST</camunda:inputParameter>
+            <camunda:inputParameter name="payload">
+              <camunda:script scriptFormat="javascript">JSON.stringify({
+    orderId: execution.getVariable("orderId")
+});</camunda:script>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="headers">${coffeeServiceAuth.headers()}</camunda:inputParameter>
+            <camunda:outputParameter name="orderStatus">
+              <camunda:script scriptFormat="javascript">JSON.parse(response).orderStatus;</camunda:script>
+            </camunda:outputParameter>
+            <camunda:outputParameter name="paymentStatus">
+              <camunda:script scriptFormat="javascript">JSON.parse(response).paymentStatus;</camunda:script>
+            </camunda:outputParameter>
+          </camunda:inputOutput>
+          <camunda:connectorId>http-connector</camunda:connectorId>
+        </camunda:connector>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1m219b5</bpmn:incoming>
+      <bpmn:outgoing>Flow_1gw7sjn</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Activity_0ve58kp" name="Возврат средств">
+      <bpmn:extensionElements>
+        <camunda:connector>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="url">http://localhost:8082/api/order-processes/refund-order</camunda:inputParameter>
+            <camunda:inputParameter name="method">POST</camunda:inputParameter>
+            <camunda:inputParameter name="payload">
+              <camunda:script scriptFormat="javascript">JSON.stringify({
+    orderId: execution.getVariable("orderId")
+});</camunda:script>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="headers">${coffeeServiceAuth.headers()}</camunda:inputParameter>
+            <camunda:outputParameter name="orderStatus">
+              <camunda:script scriptFormat="javascript">JSON.parse(response).orderStatus;</camunda:script>
+            </camunda:outputParameter>
+            <camunda:outputParameter name="paymentStatus">
+              <camunda:script scriptFormat="javascript">JSON.parse(response).paymentStatus;</camunda:script>
+            </camunda:outputParameter>
+          </camunda:inputOutput>
+          <camunda:connectorId>http-connector</camunda:connectorId>
+        </camunda:connector>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1gw7sjn</bpmn:incoming>
+      <bpmn:outgoing>Flow_0pf4lzv</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="Event_0s868ru">
+      <bpmn:incoming>Flow_0pf4lzv</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1m219b5" sourceRef="Gateway_0e4kyud" targetRef="Activity_15cabr0">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${decision == 'COMPLETE'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_1gw7sjn" sourceRef="Activity_15cabr0" targetRef="Activity_0ve58kp" />
+    <bpmn:sequenceFlow id="Flow_0pf4lzv" sourceRef="Activity_0ve58kp" targetRef="Event_0s868ru" />
+    <bpmn:scriptTask id="Activity_154kgw0" name="Обработать отказ возврата средств" scriptFormat="javascript" camunda:resultVariable="cancelReason">
+      <bpmn:incoming>Flow_0gg00zp</bpmn:incoming>
+      <bpmn:outgoing>Flow_0ylg01x</bpmn:outgoing>
+      <bpmn:script>var cancelReason = execution.getVariable("cancelReason");
+
+console.log(cancelReason);</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:sequenceFlow id="Flow_0gg00zp" sourceRef="Gateway_0e4kyud" targetRef="Activity_154kgw0">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${decision == 'CANCEL'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:boundaryEvent id="Event_0ypkxhh" attachedToRef="Activity_12s7f2m">
+      <bpmn:outgoing>Flow_1w24s4u</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_0tyx4s4" messageRef="Message_3a5ji6b" />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="Flow_1w24s4u" sourceRef="Event_0ypkxhh" targetRef="Activity_0152lk5" />
+    <bpmn:userTask id="Activity_18pkelq" name="Продолжить приготовление" camunda:formKey="" camunda:candidateUsers="worker" camunda:candidateGroups="coffee-worker">
+      <bpmn:documentation>Приготовьте заказ согласно составу.
+После завершения нажмите Complete.</bpmn:documentation>
+      <bpmn:extensionElements />
+      <bpmn:incoming>Flow_0ylg01x</bpmn:incoming>
+      <bpmn:outgoing>Flow_0n9om0s</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="Event_1gm1c1e">
+      <bpmn:incoming>Flow_00652v2</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="Activity_0f2ecbz" name="Завершить заказ">
+      <bpmn:extensionElements>
+        <camunda:connector>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="url">http://localhost:8082/api/order-processes/complete-order</camunda:inputParameter>
+            <camunda:inputParameter name="method">POST</camunda:inputParameter>
+            <camunda:inputParameter name="payload">
+              <camunda:script scriptFormat="javascript">JSON.stringify({
+    orderId: execution.getVariable("orderId")
+});</camunda:script>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="headers">${coffeeServiceAuth.headers()}</camunda:inputParameter>
+            <camunda:outputParameter name="orderStatus">
+              <camunda:script scriptFormat="javascript">JSON.parse(response).orderStatus;</camunda:script>
+            </camunda:outputParameter>
+            <camunda:outputParameter name="paymentStatus">
+              <camunda:script scriptFormat="javascript">JSON.parse(response).paymentStatus;</camunda:script>
+            </camunda:outputParameter>
+          </camunda:inputOutput>
+          <camunda:connectorId>http-connector</camunda:connectorId>
+        </camunda:connector>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0zq5c5f</bpmn:incoming>
+      <bpmn:outgoing>Flow_00652v2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Activity_0y07qfx" name="Продолжить выдачу" camunda:formKey="" camunda:candidateUsers="worker" camunda:candidateGroups="coffee-worker">
+      <bpmn:documentation>Нажмите, когда заказ будет выдан клиенту.</bpmn:documentation>
+      <bpmn:extensionElements />
+      <bpmn:incoming>Flow_16qm0mn</bpmn:incoming>
+      <bpmn:outgoing>Flow_0zq5c5f</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Activity_13rhmhn" name="Отметить готовым">
+      <bpmn:extensionElements>
+        <camunda:connector>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="url">http://localhost:8082/api/order-processes/mark-ready</camunda:inputParameter>
+            <camunda:inputParameter name="method">POST</camunda:inputParameter>
+            <camunda:inputParameter name="payload">
+              <camunda:script scriptFormat="javascript">JSON.stringify({
+    orderId: execution.getVariable("orderId")
+});</camunda:script>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="headers">${coffeeServiceAuth.headers()}</camunda:inputParameter>
+            <camunda:outputParameter name="orderStatus">
+              <camunda:script scriptFormat="javascript">JSON.parse(response).orderStatus;</camunda:script>
+            </camunda:outputParameter>
+            <camunda:outputParameter name="paymentStatus">
+              <camunda:script scriptFormat="javascript">JSON.parse(response).paymentStatus;</camunda:script>
+            </camunda:outputParameter>
+          </camunda:inputOutput>
+          <camunda:connectorId>http-connector</camunda:connectorId>
+        </camunda:connector>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1selt95</bpmn:incoming>
+      <bpmn:outgoing>Flow_16qm0mn</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_00652v2" sourceRef="Activity_0f2ecbz" targetRef="Event_1gm1c1e" />
+    <bpmn:sequenceFlow id="Flow_0zq5c5f" sourceRef="Activity_0y07qfx" targetRef="Activity_0f2ecbz" />
+    <bpmn:sequenceFlow id="Flow_16qm0mn" sourceRef="Activity_13rhmhn" targetRef="Activity_0y07qfx" />
+    <bpmn:sequenceFlow id="Flow_0ylg01x" sourceRef="Activity_154kgw0" targetRef="Activity_18pkelq" />
+    <bpmn:serviceTask id="Activity_0rz544g" name="Данные заказа">
+      <bpmn:extensionElements>
+        <camunda:connector>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="url">http://localhost:8082/api/orders/${userId}/${orderId}</camunda:inputParameter>
+            <camunda:inputParameter name="method">GET</camunda:inputParameter>
+            <camunda:inputParameter name="headers">${coffeeServiceAuth.headers()}</camunda:inputParameter>
+            <camunda:outputParameter name="order">
+              <camunda:script scriptFormat="javascript">response;</camunda:script>
+            </camunda:outputParameter>
+          </camunda:inputOutput>
+          <camunda:connectorId>http-connector</camunda:connectorId>
+        </camunda:connector>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1ytz6vf</bpmn:incoming>
+      <bpmn:outgoing>Flow_0bw1yis</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0bw1yis" sourceRef="Activity_0rz544g" targetRef="Activity_12s7f2m" />
+    <bpmn:intermediateThrowEvent id="Event_0ipqgrz">
+      <bpmn:incoming>Flow_0n9om0s</bpmn:incoming>
+      <bpmn:linkEventDefinition id="LinkEventDefinition_0qy9p81" name="todo" />
+    </bpmn:intermediateThrowEvent>
+    <bpmn:sequenceFlow id="Flow_0n9om0s" sourceRef="Activity_18pkelq" targetRef="Event_0ipqgrz" />
+    <bpmn:intermediateThrowEvent id="Event_0kk4ol2">
+      <bpmn:incoming>Flow_1ekn56h</bpmn:incoming>
+      <bpmn:linkEventDefinition id="LinkEventDefinition_03hjone" name="todo" />
+    </bpmn:intermediateThrowEvent>
+    <bpmn:sequenceFlow id="Flow_1ekn56h" sourceRef="Activity_12s7f2m" targetRef="Event_0kk4ol2" />
+    <bpmn:intermediateCatchEvent id="Event_05htrc7">
+      <bpmn:outgoing>Flow_1selt95</bpmn:outgoing>
+      <bpmn:linkEventDefinition id="LinkEventDefinition_1bkfati" name="todo" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sequenceFlow id="Flow_1selt95" sourceRef="Event_05htrc7" targetRef="Activity_13rhmhn" />
+    <bpmn:textAnnotation id="TextAnnotation_0qpomyb">
+      <bpmn:text>Заказ оплачен?</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_1rum7ma" associationDirection="None" sourceRef="Gateway_0imzce6" targetRef="TextAnnotation_0qpomyb" />
+    <bpmn:textAnnotation id="TextAnnotation_1kfr7kz">
+      <bpmn:text>Отказано в возврате средств?</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_0o11899" associationDirection="None" sourceRef="Gateway_0e4kyud" targetRef="TextAnnotation_1kfr7kz" />
+  </bpmn:process>
+  <bpmn:message id="Message_3a5ji6b" name="OrderCancelled" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="CoffeeOrderProcess">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="182" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0bbd9u2_di" bpmnElement="Activity_0bbd9u2">
+        <dc:Bounds x="270" y="160" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0y089pi_di" bpmnElement="Activity_0y089pi">
+        <dc:Bounds x="420" y="160" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0va55n0_di" bpmnElement="Activity_0va55n0">
+        <dc:Bounds x="570" y="160" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_15eay34_di" bpmnElement="Activity_15eay34">
+        <dc:Bounds x="690" y="290" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0dnx34h_di" bpmnElement="Event_0dnx34h">
+        <dc:Bounds x="1002" y="312" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1v00ryk_di" bpmnElement="Activity_1v00ryk">
+        <dc:Bounds x="840" y="290" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0immcfn_di" bpmnElement="Activity_0immcfn">
+        <dc:Bounds x="840" y="160" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_00vjao2_di" bpmnElement="Activity_00vjao2">
+        <dc:Bounds x="1000" y="160" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_12s7f2m_di" bpmnElement="Activity_12s7f2m">
+        <dc:Bounds x="1320" y="160" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0imzce6_di" bpmnElement="Gateway_0imzce6" isMarkerVisible="true">
+        <dc:Bounds x="715" y="175" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0152lk5_di" bpmnElement="Activity_0152lk5">
+        <dc:Bounds x="1320" y="380" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0e4kyud_di" bpmnElement="Gateway_0e4kyud" isMarkerVisible="true">
+        <dc:Bounds x="1485" y="395" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_15cabr0_di" bpmnElement="Activity_15cabr0">
+        <dc:Bounds x="1600" y="380" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0ve58kp_di" bpmnElement="Activity_0ve58kp">
+        <dc:Bounds x="1740" y="380" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0s868ru_di" bpmnElement="Event_0s868ru">
+        <dc:Bounds x="1892" y="402" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_154kgw0_di" bpmnElement="Activity_154kgw0">
+        <dc:Bounds x="1460" y="500" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_02a5cnf" bpmnElement="Activity_18pkelq">
+        <dc:Bounds x="1600" y="500" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0rz544g_di" bpmnElement="Activity_0rz544g">
+        <dc:Bounds x="1160" y="160" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0j37csy_di" bpmnElement="Event_0ipqgrz">
+        <dc:Bounds x="1742" y="522" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_18qllqh" bpmnElement="Event_0kk4ol2">
+        <dc:Bounds x="1472" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_1a989yo" bpmnElement="Event_1gm1c1e">
+        <dc:Bounds x="2262" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_0g0mpew" bpmnElement="Activity_0f2ecbz">
+        <dc:Bounds x="2110" y="160" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_0tkabtl" bpmnElement="Activity_0y07qfx">
+        <dc:Bounds x="1970" y="160" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_0o7926q" bpmnElement="Activity_13rhmhn">
+        <dc:Bounds x="1830" y="160" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_06r3w1x_di" bpmnElement="Event_05htrc7">
+        <dc:Bounds x="1742" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_0qpomyb_di" bpmnElement="TextAnnotation_0qpomyb">
+        <dc:Bounds x="760" y="80" width="160" height="40" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_1kfr7kz_di" bpmnElement="TextAnnotation_1kfr7kz">
+        <dc:Bounds x="1520" y="320" width="140" height="40" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0ypkxhh_di" bpmnElement="Event_0ypkxhh">
+        <dc:Bounds x="1352" y="222" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0050clh_di" bpmnElement="Flow_0050clh">
+        <di:waypoint x="218" y="200" />
+        <di:waypoint x="270" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0us2dr0_di" bpmnElement="Flow_0us2dr0">
+        <di:waypoint x="370" y="200" />
+        <di:waypoint x="420" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0ka97r7_di" bpmnElement="Flow_0ka97r7">
+        <di:waypoint x="520" y="200" />
+        <di:waypoint x="570" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_08sq6i0_di" bpmnElement="Flow_08sq6i0">
+        <di:waypoint x="670" y="200" />
+        <di:waypoint x="715" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0iwtk8v_di" bpmnElement="Flow_0iwtk8v">
+        <di:waypoint x="790" y="330" />
+        <di:waypoint x="840" y="330" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_08cbr1j_di" bpmnElement="Flow_08cbr1j">
+        <di:waypoint x="940" y="330" />
+        <di:waypoint x="1002" y="330" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0nyer0u_di" bpmnElement="Flow_0nyer0u">
+        <di:waypoint x="940" y="200" />
+        <di:waypoint x="1000" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ytz6vf_di" bpmnElement="Flow_1ytz6vf">
+        <di:waypoint x="1100" y="200" />
+        <di:waypoint x="1160" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0le2jbk_di" bpmnElement="Flow_0le2jbk">
+        <di:waypoint x="765" y="200" />
+        <di:waypoint x="840" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1jmpk6v_di" bpmnElement="Flow_1jmpk6v">
+        <di:waypoint x="740" y="225" />
+        <di:waypoint x="740" y="290" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1wip0g4_di" bpmnElement="Flow_1wip0g4">
+        <di:waypoint x="1420" y="420" />
+        <di:waypoint x="1485" y="420" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1m219b5_di" bpmnElement="Flow_1m219b5">
+        <di:waypoint x="1535" y="420" />
+        <di:waypoint x="1600" y="420" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1gw7sjn_di" bpmnElement="Flow_1gw7sjn">
+        <di:waypoint x="1700" y="420" />
+        <di:waypoint x="1740" y="420" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0pf4lzv_di" bpmnElement="Flow_0pf4lzv">
+        <di:waypoint x="1840" y="420" />
+        <di:waypoint x="1892" y="420" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0gg00zp_di" bpmnElement="Flow_0gg00zp">
+        <di:waypoint x="1510" y="445" />
+        <di:waypoint x="1510" y="500" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1w24s4u_di" bpmnElement="Flow_1w24s4u">
+        <di:waypoint x="1370" y="258" />
+        <di:waypoint x="1370" y="380" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0ylg01x_di" bpmnElement="Flow_0ylg01x">
+        <di:waypoint x="1560" y="540" />
+        <di:waypoint x="1600" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0bw1yis_di" bpmnElement="Flow_0bw1yis">
+        <di:waypoint x="1260" y="200" />
+        <di:waypoint x="1320" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_1rum7ma_di" bpmnElement="Association_1rum7ma">
+        <di:waypoint x="750" y="185" />
+        <di:waypoint x="794" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_0o11899_di" bpmnElement="Association_0o11899">
+        <di:waypoint x="1520" y="405" />
+        <di:waypoint x="1552" y="360" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0n9om0s_di" bpmnElement="Flow_0n9om0s">
+        <di:waypoint x="1700" y="540" />
+        <di:waypoint x="1742" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ekn56h_di" bpmnElement="Flow_1ekn56h">
+        <di:waypoint x="1420" y="200" />
+        <di:waypoint x="1472" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_1dl1sjs" bpmnElement="Flow_00652v2">
+        <di:waypoint x="2210" y="200" />
+        <di:waypoint x="2262" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_06qkj1m" bpmnElement="Flow_0zq5c5f">
+        <di:waypoint x="2070" y="200" />
+        <di:waypoint x="2110" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_1es232i" bpmnElement="Flow_16qm0mn">
+        <di:waypoint x="1930" y="200" />
+        <di:waypoint x="1970" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1selt95_di" bpmnElement="Flow_1selt95">
+        <di:waypoint x="1778" y="200" />
+        <di:waypoint x="1830" y="200" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
