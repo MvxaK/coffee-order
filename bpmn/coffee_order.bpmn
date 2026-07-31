@@ -371,17 +371,17 @@ console.log(cancelReason);</bpmn:script>
     <bpmn:sequenceFlow id="Flow_0bw1yis" sourceRef="Activity_0rz544g" targetRef="Activity_12s7f2m" />
     <bpmn:intermediateThrowEvent id="Event_0ipqgrz">
       <bpmn:incoming>Flow_0n9om0s</bpmn:incoming>
-      <bpmn:linkEventDefinition id="LinkEventDefinition_0qy9p81" name="todo" />
+      <bpmn:linkEventDefinition id="LinkEventDefinition_0qy9p81" name="continue_cooking" />
     </bpmn:intermediateThrowEvent>
     <bpmn:sequenceFlow id="Flow_0n9om0s" sourceRef="Activity_18pkelq" targetRef="Event_0ipqgrz" />
     <bpmn:intermediateThrowEvent id="Event_0kk4ol2">
       <bpmn:incoming>Flow_1ekn56h</bpmn:incoming>
-      <bpmn:linkEventDefinition id="LinkEventDefinition_03hjone" name="todo" />
+      <bpmn:linkEventDefinition id="LinkEventDefinition_03hjone" name="continue_cooking" />
     </bpmn:intermediateThrowEvent>
     <bpmn:sequenceFlow id="Flow_1ekn56h" sourceRef="Activity_12s7f2m" targetRef="Event_0kk4ol2" />
     <bpmn:intermediateCatchEvent id="Event_05htrc7">
       <bpmn:outgoing>Flow_1selt95</bpmn:outgoing>
-      <bpmn:linkEventDefinition id="LinkEventDefinition_1bkfati" name="todo" />
+      <bpmn:linkEventDefinition id="LinkEventDefinition_1bkfati" name="continue_cooking" />
     </bpmn:intermediateCatchEvent>
     <bpmn:sequenceFlow id="Flow_1selt95" sourceRef="Event_05htrc7" targetRef="Activity_13rhmhn" />
     <bpmn:textAnnotation id="TextAnnotation_0qpomyb">
